@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ru">
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>LangBar — раскладка в один жест</title>
+  <title>LangBar — fix text typed in the wrong layout</title>
   <style>
     :root { color-scheme: dark; }
     body {
@@ -16,6 +16,20 @@
       place-items: center;
     }
     main { width: min(560px, calc(100% - 40px)); padding: 64px 0; }
+    .lang { display: flex; gap: 8px; margin-bottom: 28px; }
+    .lang button {
+      border: 1px solid rgba(255,255,255,.25);
+      background: transparent;
+      color: #c5ced8;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font: 600 13px -apple-system, sans-serif;
+      cursor: pointer;
+    }
+    .lang button[aria-pressed="true"] {
+      background: rgba(255,255,255,.14);
+      color: white;
+    }
     h1 { font-size: 40px; margin: 0 0 12px; letter-spacing: -0.04em; }
     p { line-height: 1.5; color: #c5ced8; }
     .keys { display: flex; gap: 8px; margin: 20px 0 28px; }
@@ -43,14 +57,51 @@
 </head>
 <body>
   <main>
+    <div class="lang">
+      <button type="button" id="en" aria-pressed="true">English</button>
+      <button type="button" id="ru" aria-pressed="false">Русский</button>
+    </div>
     <h1>LangBar</h1>
-    <p>Исправляет текст, набранный не в той раскладке. Выделите его, зажмите две клавиши рядом с пробелом и отпустите. Работает в Telegram и в остальных программах.</p>
-    <div class="keys" aria-label="Option и Command">
+    <p id="lead"></p>
+    <div class="keys" aria-label="Option and Command">
       <kbd>⌥</kbd>
       <kbd>⌘</kbd>
     </div>
-    <a class="download" href="https://github.com/zakabluk/langbar/releases/download/1.0.0/LangBar.dmg">Скачать LangBar.dmg</a>
-    <p class="note">После установки откройте LangBar и разрешите «Универсальный доступ». Приложение ничего не отправляет в сеть.</p>
+    <a class="download" id="download" href="https://github.com/zakabluk/langbar/releases/download/1.0.0/LangBar.dmg"></a>
+    <p class="note" id="note"></p>
   </main>
+  <script>
+    const copy = {
+      en: {
+        title: "LangBar — fix text typed in the wrong layout",
+        lead: "Fixes text you typed with the wrong keyboard layout. Select it, hold the two keys next to the space bar, then release. Works in Telegram and in other apps.",
+        download: "Download LangBar.dmg",
+        note: "After installing, open LangBar and allow Accessibility. The app never sends anything over the network."
+      },
+      ru: {
+        title: "LangBar — текст не в той раскладке",
+        lead: "Исправляет текст, набранный не в той раскладке. Выделите его, зажмите две клавиши рядом с пробелом и отпустите. Работает в Telegram и в остальных программах.",
+        download: "Скачать LangBar.dmg",
+        note: "После установки откройте LangBar и разрешите «Универсальный доступ». Приложение ничего не отправляет в сеть."
+      }
+    };
+    const buttons = { en: document.getElementById("en"), ru: document.getElementById("ru") };
+    function setLang(lang) {
+      const text = copy[lang];
+      document.documentElement.lang = lang;
+      document.title = text.title;
+      document.getElementById("lead").textContent = text.lead;
+      document.getElementById("download").textContent = text.download;
+      document.getElementById("note").textContent = text.note;
+      buttons.en.setAttribute("aria-pressed", lang === "en");
+      buttons.ru.setAttribute("aria-pressed", lang === "ru");
+      localStorage.setItem("langbar-lang", lang);
+    }
+    buttons.en.addEventListener("click", () => setLang("en"));
+    buttons.ru.addEventListener("click", () => setLang("ru"));
+    const saved = localStorage.getItem("langbar-lang");
+    const browser = (navigator.language || "").toLowerCase().startsWith("ru") ? "ru" : "en";
+    setLang(saved || browser);
+  </script>
 </body>
 </html>
